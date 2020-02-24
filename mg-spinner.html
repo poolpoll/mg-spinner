@@ -1,7 +1,39 @@
+<link rel="import" href="../polymer/polymer.html">
+
 <dom-module id="mg-spinner">
 	<template>
-		<div>
-			<img src="[[spinnerImage]]" />
+		<style>
+			.spinner-container-on {
+				display: flex;
+				position: relative;
+				height: 100vh;
+				width: 100vw;
+				background: rgba(0, 0, 0, 0.5);
+				align-items: center;
+				flex-direction: column;
+			}
+			.spinner-container-off {
+				display: none;
+			}
+			#spinner {
+				display: block;
+				margin: auto;
+			}
+			#spinner-img {
+				display: block;
+				margin: auto;
+				width: var(--mg-spinner-width, 50px);
+			}
+			#spinner-msg {
+				color: #FFFFFF;
+				display: block;
+			}
+		</style>
+		<div id="spinner-container" class$="{{spinnerClassName}}">
+			<div id="spinner">
+				<img id="spinner-img" src="./images/spinner.png" />
+				<span id="spinner-msg">Loading ... </span>
+			</div>
 		</div>
 	</template>
 	<script>
@@ -9,15 +41,59 @@
 			is: 'mg-spinner',
 
 			properties: {
-				status: {
+				active: {
 					type: Boolean,
 					value: false
+				},
+
+				sleepTime: {
+					type: Number,
+					value: 500
 				}
 			},
 
-			spinnerImage: {
-				type: String,
-				value: './images/spinner.gif'
+			ready: function() {
+				document.addEventListener('mg-spinner-toggle', function() {
+					this.toggleSpinner();
+				}.bind(this));
+
+				document.addEventListener('mg-spinner-active', function() {
+					this.activeSpinner();
+				}.bind(this));				
+
+				document.addEventListener('mg-spinner-deactive', function() {
+					this.deactiveSpinner();
+				}.bind(this));
+			},
+
+			sleep: function(milliseconds) {
+				var start = new Date().getTime();
+				for (var i = 0; i < 1e7; i++) {
+					if((new Date().getTime() - start) > milliseconds) {
+						break;
+					}
+				}
+			},
+
+			toggleSpinner: function() {
+				this.active = !this.active;
+				if(this.active) {
+					this.spinnerClassName = 'spinner-container-on';
+				} else {
+					this.sleep(this.sleepTime);
+					this.spinnerClassName = 'spinner-container-off';
+				}
+			},
+
+			activeSpinner: function() {
+				this.active = true;
+				this.spinnerClassName = 'spinner-container-on';
+			},
+
+			deactiveSpinner: function() {
+				this.sleep(this.sleepTime);
+				this.active = false;
+				this.spinnerClassName = 'spinner-container-off';
 			}
 		})
 	</script>
